@@ -119,6 +119,8 @@ customElements.define(
       }
     };
 
+    selectedOptions = () => this.selectElement.selectedOptions;
+
     connectedCallback() {
       this.searchInputElement.addEventListener("keyup", (e) => {
         //filter our items based on the input text
@@ -140,3 +142,7 @@ customElements.define(
 document.getElementById("search-select1").addEventListener("change", (e) => {
   console.log("event received", e);
 });
+
+document
+  .getElementById("search-select1")
+  .shadowRoot.getElementById("target-select").selectedOptions;

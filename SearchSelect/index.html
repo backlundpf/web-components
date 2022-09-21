@@ -20,9 +20,8 @@
     </template>
 
     <template id="search-select-template">
-      <input id="search-input" type="text" /><br />
       <div id="selected-items-text"></div>
-      <hr />
+      <input id="search-input" type="text" /><br />
       <div id="filtered-items-text"></div>
       <select id="target-select"></select>
     </template>
@@ -48,6 +47,7 @@
     <div>
       <br /><br />
       <search-select id="search-select1" multiple="true">
+        <option value=""></option>
         <option value="dog">Dog</option>
         <option value="cat">Cat</option>
         <option value="hamster">Hamster</option>
