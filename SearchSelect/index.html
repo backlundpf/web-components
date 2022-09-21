@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Simple template</title>
+    <script src="main.js" defer></script>
+  </head>
+  <body>
+    <h1>Simple template</h1>
+
+    <template id="search-in-select-template">
+      <input id="search-input" type="text" /><br />
+      <slot name="select">
+        <select>
+          <option>Dog</option>
+          <option>Cat</option>
+          <option>Mouse</option>
+        </select>
+      </slot>
+    </template>
+
+    <template id="search-select-template">
+      <input id="search-input" type="text" /><br />
+      <div id="selected-items-text"></div>
+      <hr />
+      <div id="filtered-items-text"></div>
+      <select id="target-select"></select>
+    </template>
+
+    <div>
+      <search-in-select>
+        <select slot="select" multiple>
+          <option value="1">This is text 1</option>
+          <option value="2">This is text 2</option>
+          <option value="3">This is text 3</option>
+        </select>
+        <p>Where does this show up?</p>
+      </search-in-select>
+      <br /><br />
+      <search-in-select>
+        <select slot="select">
+          <option value="1">This is text 4</option>
+          <option value="2">This is text 5</option>
+          <option value="3">This is text 6</option>
+        </select>
+      </search-in-select>
+    </div>
+    <div>
+      <br /><br />
+      <search-select id="search-select1" multiple="true">
+        <option value="dog">Dog</option>
+        <option value="cat">Cat</option>
+        <option value="hamster">Hamster</option>
+        <option value="parrot">Parrot</option>
+        <option value="spider">Spider</option>
+        <option value="goldfish">Goldfish</option>
+        <option value="aardvark">Aardvark</option>
+      </search-select>
+      <br /><br />
+      <search-select>
+        <option value="1">This is text 4</option>
+        <option value="2">This is text 5</option>
+        <option value="3">This is text 6</option>
+      </search-select>
+    </div>
+  </body>
+</html>
