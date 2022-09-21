@@ -60,81 +60,50 @@ customElements.define(
         this.selectElement.setAttribute("multiple", "true");
       }
 
-      // Get all options
-      this.selectElement.querySelectorAll("option").forEach((opt) => {
-        this.selectableItems.push({
-          value: opt.value,
-          text: opt.innerHTML,
-          filtered: false,
-          selected: false,
-        });
-      });
     }
 
-    updateItems = () => {
-      console.log("filtering");
-      const filteredItemDivs = this.selectableItems
-        .filter((item) => item.filtered && !item.selected)
-        .map((item) => {
+    populateFilteredItems = (e) => {
+      let filteredOpts = [...this.selectElement.querySelectorAll('option:not(["selected"])')
+      .filter(opt => (opt.innerHTML.toLowerCase().search(e.target.value.toLowerCase()) >= 0))]
+
+      const filteredItemDivs = filteredOpts
+        .map(opt => {
           let li = document.createElement("div");
-          li.innerText = item.text;
-          li.dataset.value = item.value;
+          li.innerText = opt.innerHTML;
+          li.dataset.value = opt.value;
           li.addEventListener("click", (e) => {
-            item.selected = true;
-            this.updateItems();
+            e.target.setAttribute('selected', '');
           });
-          return li;
         });
-      this.filteredItemsElement.replaceChildren(...filteredItemDivs);
+      
+        this.filteredItemsElement.replaceChildren(...filteredItemDivs);
+    };
 
-      const selectedItemVals = [];
+    populateSelectedItems = (e) => {
+      this.selectedOptions = e.target.selectedOptions;
 
-      const selectedItemDivs = this.selectableItems
-        .filter((item) => item.selected)
-        .map((item) => {
-          selectedItemVals.push(item.value);
+      const selectedItemDivs = [...e.target.selectedOptions].map(opt => {
           let li = document.createElement("div");
-          li.innerText = item.text;
-          li.dataset.value = item.value;
+          li.innerText = opt.innerHTML;
+          li.dataset.value = opt.value;
           li.addEventListener("click", (e) => {
-            item.selected = false;
-            this.updateItems();
+            opt.removeAttribute('selected')
           });
           return li;
         });
       this.selectedItemsElement.replaceChildren(...selectedItemDivs);
-
-      this.selectElement.querySelectorAll("option").forEach((opt) => {
-        this.setSelected(opt, selectedItemVals.includes(opt.value));
-      });
-
-      console.log(this.selectElement.selectedOptions);
-    };
-
-    setSelected = (opt, selected) => {
-      if (opt.hasAttribute("selected") && !selected) {
-        opt.removeAttribute("selected");
-      } else if (selected) {
-        opt.setAttribute("selected", true);
-      }
-    };
-
-    selectedOptions = () => this.selectElement.selectedOptions;
+        //this.dispatchEvent(new Event('change'));
+    }
 
     connectedCallback() {
-      this.searchInputElement.addEventListener("keyup", (e) => {
-        //filter our items based on the input text
-        let filteredItems = this.selectableItems.forEach(
-          (item) =>
-            (item.filtered =
-              item.text.toLowerCase().search(e.target.value.toLowerCase()) >= 0)
-        );
-        this.updateItems();
-      });
+      this.searchInputElement.addEventListener("keyup", populateFilteredItems);
+      this.searchInputElement.addEventListener("click", populateFilteredItems);
+      this.selectElement.addEventListener('change', populateSelectedItems)
     }
 
     disconnectedCallback() {
-      this.shadowRoot.getElementById("search-input").removeEventListener();
+      this.searchInputElement.removeEventListener();
+      this.selectElement.removeEventListener();
     }
   }
 );
