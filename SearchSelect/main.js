@@ -43,6 +43,8 @@ customElements.define(
         templateContent.cloneNode(true)
       );
 
+      this.searchInputGroupElement =
+        this.shadowRoot.getElementById("search-input-group");
       this.searchInputElement = this.shadowRoot.getElementById("search-input");
       this.filteredItemsElement = this.shadowRoot.getElementById(
         "filtered-items-text"
@@ -52,66 +54,97 @@ customElements.define(
         "selected-items-text"
       );
 
-      this.selectElement = this.shadowRoot.getElementById("target-select");
-      this.selectElement.innerHTML = this.innerHTML;
-
-      // Set our multiple flag
-      if (this.hasAttribute("multiple")) {
-        this.selectElement.setAttribute("multiple", "true");
-      }
-
+      this.options = this.querySelectorAll("option");
     }
 
     populateFilteredItems = (e) => {
-      let filteredOpts = [...this.selectElement.querySelectorAll('option:not(["selected"])')
-      .filter(opt => (opt.innerHTML.toLowerCase().search(e.target.value.toLowerCase()) >= 0))]
+      let filteredOpts = [
+        ...this.querySelectorAll("option:not([selected])"),
+      ].filter(
+        (opt) =>
+          opt.innerHTML
+            .toLowerCase()
+            .search(this.searchInputElement.value.toLowerCase()) >= 0
+      );
 
-      const filteredItemDivs = filteredOpts
-        .map(opt => {
-          let li = document.createElement("div");
-          li.innerText = opt.innerHTML;
-          li.dataset.value = opt.value;
-          li.addEventListener("click", (e) => {
-            e.target.setAttribute('selected', '');
-          });
+      const filteredItemDivs = filteredOpts.map((opt) => {
+        let li = document.createElement("input");
+        li.type = "button";
+        // li.form = this.searchInputGroupElement;
+        li.value = opt.innerHTML;
+        li.dataset.value = opt.value;
+        li.addEventListener("click", (e) => {
+          opt.setAttribute("selected", "true");
+          // this.searchInputElement.dispatchEvent(new Event("change"));
+          this.populateSelectedItems();
+          this.populateFilteredItems();
+          this.dispatchEvent(new Event("change"));
         });
-      
-        this.filteredItemsElement.replaceChildren(...filteredItemDivs);
+        return li;
+      });
+
+      this.filteredItemsElement.replaceChildren(...filteredItemDivs);
     };
 
     populateSelectedItems = (e) => {
-      this.selectedOptions = e.target.selectedOptions;
+      this.selectedOptions = [...this.options].filter((opt) =>
+        opt.hasAttribute("selected")
+      );
 
-      const selectedItemDivs = [...e.target.selectedOptions].map(opt => {
-          let li = document.createElement("div");
-          li.innerText = opt.innerHTML;
-          li.dataset.value = opt.value;
-          li.addEventListener("click", (e) => {
-            opt.removeAttribute('selected')
-          });
-          return li;
+      const selectedItemDivs = this.selectedOptions.map((opt) => {
+        let li = document.createElement("div");
+        li.innerText = opt.innerHTML;
+        li.dataset.value = opt.value;
+        li.addEventListener("click", (e) => {
+          opt.removeAttribute("selected");
+
+          this.populateSelectedItems();
+          this.populateFilteredItems();
+          this.dispatchEvent(new Event("change"));
+          // this.searchInputElement.dispatchEvent(new Event("change"));
         });
+        return li;
+      });
       this.selectedItemsElement.replaceChildren(...selectedItemDivs);
-        //this.dispatchEvent(new Event('change'));
-    }
+      //this.dispatchEvent(new Event('change'));
+    };
 
     connectedCallback() {
-      this.searchInputElement.addEventListener("keyup", populateFilteredItems);
-      this.searchInputElement.addEventListener("click", populateFilteredItems);
-      this.selectElement.addEventListener('change', populateSelectedItems)
+      // this.filteredItemsElement.style.display = "none";
+      this.populateFilteredItems();
+      this.searchInputGroupElement.addEventListener("focusin", (e) => {
+        this.filteredItemsElement.style.display = "block";
+      });
+      this.searchInputGroupElement.addEventListener("focusout", (e) => {
+        //this.filteredItemsElement.style.display = "none";
+        console.log("focusout");
+      });
+      this.searchInputElement.addEventListener(
+        "keyup",
+        this.populateFilteredItems
+      );
+      this.searchInputElement.addEventListener(
+        "click",
+        this.populateFilteredItems
+      );
+      // this.searchInputElement.addEventListener(
+      //   "change",
+      //   this.populateFilteredItems
+      // );
+      // this.filteredItemsElement.addEventListener(
+      //   "change",
+      //   this.populateFilteredItems
+      // );
+      // this.addEventListener("change", this.populateSelectedItems);
     }
 
     disconnectedCallback() {
       this.searchInputElement.removeEventListener();
-      this.selectElement.removeEventListener();
+      this.removeEventListener();
     }
   }
 );
 
 document.getElementById("search-select1").addEventListener("change", (e) => {
-  console.log("event received", e);
+  console.log("event received", e.target.selectedOptions);
 });
-
-document
-  .getElementById("search-select1")
-  .shadowRoot.getElementById("target-select").selectedOptions;

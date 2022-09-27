@@ -8,60 +8,40 @@
   <body>
     <h1>Simple template</h1>
 
-    <template id="search-in-select-template">
-      <input id="search-input" type="text" /><br />
-      <slot name="select">
-        <select>
-          <option>Dog</option>
-          <option>Cat</option>
-          <option>Mouse</option>
-        </select>
-      </slot>
-    </template>
-
     <template id="search-select-template">
       <div id="selected-items-text"></div>
-      <input id="search-input" type="text" /><br />
-      <div id="filtered-items-text"></div>
-      <select id="target-select"></select>
+      <form id="search-input-group" style="border: 1px solid black">
+        <input id="search-input" type="text" /><br />
+        <div id="filtered-items-text" style=""></div>
+      </form>
     </template>
-
     <div>
-      <search-in-select>
-        <select slot="select" multiple>
-          <option value="1">This is text 1</option>
-          <option value="2">This is text 2</option>
-          <option value="3">This is text 3</option>
-        </select>
-        <p>Where does this show up?</p>
-      </search-in-select>
       <br /><br />
-      <search-in-select>
-        <select slot="select">
+      <div class="select-container">
+        <search-select id="search-select-multiple" multiple="true">
+          <option value="dog">Dog</option>
+          <option value="cat">Cat</option>
+          <option value="hamster">Hamster</option>
+          <option value="parrot">Parrot</option>
+          <option value="spider">Spider</option>
+          <option value="goldfish">Goldfish</option>
+          <option value="aardvark">Aardvark</option>
+        </search-select>
+      </div>
+      <br /><br />
+      <div class="select-container">
+        <search-select id="search-select-single">
           <option value="1">This is text 4</option>
           <option value="2">This is text 5</option>
           <option value="3">This is text 6</option>
-        </select>
-      </search-in-select>
-    </div>
-    <div>
-      <br /><br />
-      <search-select id="search-select1" multiple="true">
-        <option value=""></option>
-        <option value="dog">Dog</option>
-        <option value="cat">Cat</option>
-        <option value="hamster">Hamster</option>
-        <option value="parrot">Parrot</option>
-        <option value="spider">Spider</option>
-        <option value="goldfish">Goldfish</option>
-        <option value="aardvark">Aardvark</option>
-      </search-select>
-      <br /><br />
-      <search-select>
-        <option value="1">This is text 4</option>
-        <option value="2">This is text 5</option>
-        <option value="3">This is text 6</option>
-      </search-select>
+        </search-select>
+      </div>
     </div>
   </body>
 </html>
+
+<style>
+  .select-container {
+    width: 150px;
+  }
+</style>
