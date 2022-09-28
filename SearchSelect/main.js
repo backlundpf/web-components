@@ -30,7 +30,7 @@ customElements.define(
     }
 
     initializeFilteredItems = () => {
-      const filteredItemDivs = [...this.options].map((opt) => {
+      this.filteredItemDivs = [...this.options].map((opt) => {
         let li = document.createElement("div");
         li.type = "";
         // li.form = this.searchInputGroupElement;
@@ -39,18 +39,29 @@ customElements.define(
         return li;
       });
 
-      this.filteredItemsElement.replaceChildren(...filteredItemDivs);
+      this.filteredItemsElement.replaceChildren(...this.filteredItemDivs);
     };
 
-    populateFilteredItems = (e) => {
-      let filteredOpts = [
-        ...this.filteredItemsElement.querySelectorAll("div")
-      ].foreach(
-        (opt) =>
-          opt.innerHTML
-            .toLowerCase()
-            .search(this.searchInputElement.value.toLowerCase()) >= 0
-      );
+    populateFilteredItems = () => {
+      // Filter based off the search input
+      this.filteredItemDivs.forEach((opt) => {
+        const searchText = this.searchInputElement.value;
+        const optContainsText =
+          opt.innerHTML.toLowerCase().search(searchText.toLowerCase()) >= 0;
+
+        const shouldBeShown = !searchText || optContainsText;
+        console.log(opt.dataset.value, shouldBeShown);
+        opt.hidden = !shouldBeShown;
+      });
+
+      // Filter based off the selected items
+      [...this.options]
+        .filter((opt) => opt.hasAttribute("selected"))
+        .map((opt) => {
+          this.filteredItemDivs.find(
+            (div) => div.dataset.value === opt.value
+          ).hidden = true;
+        });
     };
 
     populateSelectedItems = (e) => {
@@ -95,7 +106,7 @@ customElements.define(
     connectedCallback() {
       this.filteredItemsElement.style.display = "none";
       this.initializeFilteredItems();
-      this.populateFilteredItems();
+      //this.populateFilteredItems();
       this.searchInputGroupElement.addEventListener("focusin", (e) => {
         this.filteredItemsElement.style.display = "block";
       });
