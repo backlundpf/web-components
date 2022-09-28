@@ -13,9 +13,8 @@ customElements.define(
         templateContent.cloneNode(true)
       );
 
-      this.searchInputGroupElement = this.shadowRoot.getElementById(
-        "search-input-group"
-      );
+      this.searchInputGroupElement =
+        this.shadowRoot.getElementById("search-input-group");
       this.searchInputElement = this.shadowRoot.getElementById("search-input");
       this.filteredItemsElement = this.shadowRoot.getElementById(
         "filtered-items-text"
@@ -30,11 +29,13 @@ customElements.define(
 
     initializeFilteredItems = () => {
       this.filteredItemDivs = [...this.options].map((opt) => {
-        let li = document.createElement("div");
+        let li = document.createElement("input");
+        // a.setAttribute("href", "javascript:;");
         li.type = "";
         // li.form = this.searchInputGroupElement;
-        li.innerText = opt.innerHTML;
+        li.value = opt.innerHTML;
         li.dataset.value = opt.value;
+        //li.appendChild(a);
         return li;
       });
 
@@ -46,7 +47,7 @@ customElements.define(
       this.filteredItemDivs.forEach((opt) => {
         const searchText = this.searchInputElement.value;
         const optContainsText =
-          opt.innerHTML.toLowerCase().search(searchText.toLowerCase()) >= 0;
+          opt.dataset.value.toLowerCase().search(searchText.toLowerCase()) >= 0;
 
         const shouldBeShown = !searchText || optContainsText;
         opt.classList.toggle("hidden", !shouldBeShown);
@@ -105,8 +106,13 @@ customElements.define(
 
       const selectedItemDivs = this.selectedOptions.map((opt) => {
         let li = document.createElement("div");
+        li.classList.add("selected", "item");
         li.innerText = opt.innerHTML;
         li.dataset.value = opt.value;
+        let close = document.createElement("input");
+        close.type = "button";
+        close.value = "x";
+        li.appendChild(close);
         return li;
       });
       this.selectedItemsElement.replaceChildren(...selectedItemDivs);
@@ -145,9 +151,14 @@ customElements.define(
         this.filteredItemsElement.style.display = "block";
       });
       this.addEventListener("blur", (e) => {
+        console.log("Targets");
         console.log(e.relatedTarget);
-        if (this.contains(e.relatedTarget)) return;
-        //this.filteredItemsElement.style.display = "none";
+        console.log(e.target);
+        console.log(e.currentTarget);
+        console.log(e.relatedTarget != e.currentTarget);
+        console.log("--------");
+        if (e.relatedTarget == e.currentTarget) return;
+        this.filteredItemsElement.style.display = "none";
       });
       this.searchInputElement.addEventListener("input", (e) => {
         this.updateFilteredItems();
@@ -183,7 +194,7 @@ customElements.define(
         this.selectFilteredItem(e.target)
       );
       this.selectedItemsElement.addEventListener("click", (e) =>
-        this.removeSelectedItem(e.target)
+        this.removeSelectedItem(e.target.closest("div"))
       );
       // this.searchInputElement.addEventListener(
       //   "change",
