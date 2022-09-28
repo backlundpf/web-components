@@ -109,9 +109,11 @@ customElements.define(
         li.classList.add("selected", "item");
         li.innerText = opt.innerHTML;
         li.dataset.value = opt.value;
-        let close = document.createElement("input");
-        close.type = "button";
-        close.value = "x";
+        let close = document.createElement("a");
+        //close.type = "button";
+        close.href = "javascript:;";
+        close.innerText = "x";
+        close.setAttribute("tabindex", "0");
         li.appendChild(close);
         return li;
       });
@@ -150,6 +152,7 @@ customElements.define(
       this.searchInputGroupElement.addEventListener("focusin", (e) => {
         this.filteredItemsElement.style.display = "block";
       });
+
       this.addEventListener("blur", (e) => {
         console.log("Targets");
         console.log(e.relatedTarget);
@@ -157,12 +160,17 @@ customElements.define(
         console.log(e.currentTarget);
         console.log(e.relatedTarget != e.currentTarget);
         console.log("--------");
-        if (e.relatedTarget == e.currentTarget) return;
+        if (this.handlingClick) {
+          this.handlingClick = false;
+          return;
+        }
         this.filteredItemsElement.style.display = "none";
       });
+
       this.searchInputElement.addEventListener("input", (e) => {
         this.updateFilteredItems();
       });
+
       this.searchInputGroupElement.addEventListener("keydown", (e) => {
         // get the key
         switch (e.keyCode) {
@@ -180,22 +188,26 @@ customElements.define(
             break;
           case 13:
             // Enter
+            this.handlingClick = true;
             this.selectActiveFilteredItem();
             break;
           default:
             console.log(e.keyCode);
         }
       });
+
       // this.searchInputElement.addEventListener(
       //   "click",
       //   this.populateFilteredItems
       // );
-      this.filteredItemsElement.addEventListener("click", (e) =>
-        this.selectFilteredItem(e.target)
-      );
-      this.selectedItemsElement.addEventListener("click", (e) =>
-        this.removeSelectedItem(e.target.closest("div"))
-      );
+      this.filteredItemsElement.addEventListener("click", (e) => {
+        this.handlingClick = true;
+        this.selectFilteredItem(e.target);
+      });
+      this.selectedItemsElement.addEventListener("click", (e) => {
+        this.handlingClick = true;
+        this.removeSelectedItem(e.target.closest("div"));
+      });
       // this.searchInputElement.addEventListener(
       //   "change",
       //   this.populateFilteredItems
