@@ -2,3 +2,22 @@
     width: 150px;
   }
   
+  search-select .filtered-items div {
+  }
+  
+  .hidden {
+    display: none;
+  }
+  
+  .active {
+    background-color: lightblue;
+  }
+  
+  .secondary {
+    font-style: italic;
+  }
+  
+  .test-toggle {
+    background-color: green;
+  }
+  

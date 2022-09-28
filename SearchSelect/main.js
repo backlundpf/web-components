@@ -41,7 +41,7 @@ customElements.define(
       this.filteredItemsElement.replaceChildren(...this.filteredItemDivs);
     };
 
-    updateFilteredItems = (keyDirection = null) => {
+    updateFilteredItems = () => {
       // Filter based off the search input
       this.filteredItemDivs.forEach((opt) => {
         const searchText = this.searchInputElement.value;
@@ -49,32 +49,52 @@ customElements.define(
           opt.innerHTML.toLowerCase().search(searchText.toLowerCase()) >= 0;
 
         const shouldBeShown = !searchText || optContainsText;
-        opt.hidden = !shouldBeShown;
+        opt.classList.toggle("hidden", !shouldBeShown);
       });
 
       // Filter based off the selected items
       [...this.options]
         .filter((opt) => opt.hasAttribute("selected"))
         .map((opt) => {
-          this.filteredItemDivs.find(
-            (div) => div.dataset.value === opt.value
-          ).hidden = true;
+          this.filteredItemDivs
+            .find((div) => div.dataset.value === opt.value)
+            .classList.add("hidden");
         });
       console.log("updated filtered items");
     };
 
     updateActiveFilteredItem = (keyDirection) => {
       // find the currently active item
-      const activeItem = this.filteredItemDivs.find((opt) =>
-        opt.classList.contains("active")
-      );
-      const activeItemIndex = this.filteredItemDivs.indexOf((opt) =>
+      const activeItemIndex = this.filteredItemDivs.findIndex((opt) =>
         opt.classList.contains("active")
       );
 
-      const index = keyDirection;
+      let index = activeItemIndex + keyDirection;
+
       while (true) {
         // Iterate through the items until we find the next one that isn't hidden
+        const item = this.filteredItemDivs.at(index);
+        if (item.classList.contains("hidden")) {
+          index += keyDirection;
+          continue;
+        }
+        item.classList.add("active");
+        if (activeItemIndex >= 0) {
+          this.filteredItemDivs[activeItemIndex].classList.remove("active");
+        }
+        break;
+      }
+    };
+
+    selectActiveFilteredItem = () => {
+      // find the currently active item
+      const activeItem = this.filteredItemDivs.find((opt) =>
+        opt.classList.contains("active")
+      );
+
+      if (activeItem) {
+        this.selectFilteredItem(activeItem);
+        this.updateActiveFilteredItem(1);
       }
     };
 
@@ -124,10 +144,14 @@ customElements.define(
       this.searchInputGroupElement.addEventListener("focusin", (e) => {
         this.filteredItemsElement.style.display = "block";
       });
-      this.searchInputElement.addEventListener(
-        "input",
-        this.updateFilteredItems
-      );
+      this.addEventListener("blur", (e) => {
+        console.log(e.relatedTarget);
+        if (this.contains(e.relatedTarget)) return;
+        //this.filteredItemsElement.style.display = "none";
+      });
+      this.searchInputElement.addEventListener("input", (e) => {
+        this.updateFilteredItems();
+      });
       this.searchInputGroupElement.addEventListener("keydown", (e) => {
         // get the key
         switch (e.keyCode) {
@@ -137,14 +161,15 @@ customElements.define(
             break;
           case 40:
             // down arrow
-            this.updateFilteredItems(-1);
+            this.updateActiveFilteredItem(1);
             break;
           case 38:
             // up arrow
-            this.updateFilteredItems(1);
+            this.updateActiveFilteredItem(-1);
             break;
           case 13:
             // Enter
+            this.selectActiveFilteredItem();
             break;
           default:
             console.log(e.keyCode);
