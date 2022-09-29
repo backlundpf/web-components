@@ -30,12 +30,10 @@ customElements.define(
     initializeFilteredItems = () => {
       this.filteredItemDivs = [...this.options].map((opt) => {
         let li = document.createElement("input");
-        // a.setAttribute("href", "javascript:;");
-        li.type = "";
-        // li.form = this.searchInputGroupElement;
+        li.classList.add("filtered", "item");
+        li.type = "button";
         li.value = opt.innerHTML;
         li.dataset.value = opt.value;
-        //li.appendChild(a);
         return li;
       });
 
@@ -65,25 +63,34 @@ customElements.define(
     };
 
     updateActiveFilteredItem = (keyDirection) => {
+      // Check that all our items are still visible
+      const visibleItems = this.filteredItemDivs.find(
+        (opt) => !opt.classList.contains("hidden")
+      );
+      if (!visibleItems) {
+        return;
+      }
+
       // find the currently active item
       const activeItemIndex = this.filteredItemDivs.findIndex((opt) =>
         opt.classList.contains("active")
       );
 
       let index = activeItemIndex + keyDirection;
+      let item;
 
-      while (true) {
+      do {
+        if (index >= this.filteredItemDivs.length) {
+          index = 0;
+        }
         // Iterate through the items until we find the next one that isn't hidden
-        const item = this.filteredItemDivs.at(index);
-        if (item.classList.contains("hidden")) {
-          index += keyDirection;
-          continue;
-        }
-        item.classList.add("active");
-        if (activeItemIndex >= 0) {
-          this.filteredItemDivs[activeItemIndex].classList.remove("active");
-        }
-        break;
+        item = this.filteredItemDivs.at(index);
+        index += keyDirection;
+      } while (item.classList.contains("hidden"));
+
+      item.classList.add("active");
+      if (activeItemIndex >= 0) {
+        this.filteredItemDivs[activeItemIndex].classList.remove("active");
       }
     };
 
@@ -109,16 +116,21 @@ customElements.define(
         li.classList.add("selected", "item");
         li.innerText = opt.innerHTML;
         li.dataset.value = opt.value;
-        let close = document.createElement("a");
-        //close.type = "button";
-        close.href = "javascript:;";
-        close.innerText = "x";
-        close.setAttribute("tabindex", "0");
+
+        // Append our close button
+        let close = document.createElement("button");
+        close.type = "button";
+        close.value = "";
+
+        const closeCopy =
+          this.shadowRoot.getElementById("icon-close").innerHTML;
+        close.innerHTML = closeCopy;
+
         li.appendChild(close);
         return li;
       });
       this.selectedItemsElement.replaceChildren(...selectedItemDivs);
-      //this.dispatchEvent(new Event('change'));
+      this.dispatchEvent(new Event("change"));
     };
 
     selectFilteredItem = (item) => {
@@ -139,12 +151,6 @@ customElements.define(
       this.updateFilteredItems();
     };
 
-    bgChange = () => {
-      const rndCol = `rgb(${random(255)}, ${random(255)}, ${random(255)})`;
-      console.log("Random Color: ", rndCol);
-      return rndCol;
-    };
-
     connectedCallback() {
       this.filteredItemsElement.style.display = "none";
       this.initializeFilteredItems();
@@ -154,12 +160,6 @@ customElements.define(
       });
 
       this.addEventListener("blur", (e) => {
-        console.log("Targets");
-        console.log(e.relatedTarget);
-        console.log(e.target);
-        console.log(e.currentTarget);
-        console.log(e.relatedTarget != e.currentTarget);
-        console.log("--------");
         if (this.handlingClick) {
           this.handlingClick = false;
           return;
@@ -173,20 +173,20 @@ customElements.define(
 
       this.searchInputGroupElement.addEventListener("keydown", (e) => {
         // get the key
-        switch (e.keyCode) {
-          case 9:
+        switch (e.code) {
+          case "Tab":
             // tab
             this.filteredItemsElement.style.display = "none";
             break;
-          case 40:
+          case "ArrowDown":
             // down arrow
             this.updateActiveFilteredItem(1);
             break;
-          case 38:
+          case "ArrowUp":
             // up arrow
             this.updateActiveFilteredItem(-1);
             break;
-          case 13:
+          case "Enter":
             // Enter
             this.handlingClick = true;
             this.selectActiveFilteredItem();
@@ -196,10 +196,6 @@ customElements.define(
         }
       });
 
-      // this.searchInputElement.addEventListener(
-      //   "click",
-      //   this.populateFilteredItems
-      // );
       this.filteredItemsElement.addEventListener("click", (e) => {
         this.handlingClick = true;
         this.selectFilteredItem(e.target);
@@ -208,15 +204,6 @@ customElements.define(
         this.handlingClick = true;
         this.removeSelectedItem(e.target.closest("div"));
       });
-      // this.searchInputElement.addEventListener(
-      //   "change",
-      //   this.populateFilteredItems
-      // );
-      // this.filteredItemsElement.addEventListener(
-      //   "change",
-      //   this.populateFilteredItems
-      // );
-      // this.addEventListener("change", this.populateSelectedItems);
     }
 
     disconnectedCallback() {
@@ -233,4 +220,10 @@ customElements.define(
 // });
 function random(number) {
   return Math.floor(Math.random() * number);
+}
+
+function bgChange() {
+  const rndCol = `rgb(${random(255)}, ${random(255)}, ${random(255)})`;
+  console.log("Random Color: ", rndCol);
+  return rndCol;
 }

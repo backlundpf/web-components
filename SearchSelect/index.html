@@ -10,10 +10,28 @@
     <h1 id="test-toggle" class="">Search Select</h1>
     <template id="search-select-template">
       <link rel="stylesheet" href="styles.css" />
-      <div id="selected-items-text"></div>
-      <div id="search-input-group" style="border: 1px solid black;">
-        <input id="search-input" type="text" /><br />
+      <div id="search-input-group">
+        <div class="selected container">
+          <div id="selected-items-text"></div>
+          <input id="search-input" type="text" /><br />
+        </div>
         <div id="filtered-items-text" class="filtered-items"></div>
+      </div>
+      <div id="icon-close" style="display: none">
+        <svg
+          class="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          ></path>
+        </svg>
       </div>
     </template>
     <div>
