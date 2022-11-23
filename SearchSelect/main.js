@@ -152,23 +152,40 @@ customElements.define(
     };
 
     connectedCallback() {
-      this.filteredItemsElement.style.display = "none";
+      this.filteredItemsElement.classList.toggle("active", false);
       this.initializeFilteredItems();
       //this.populateFilteredItems();
       this.searchInputGroupElement.addEventListener("focusin", (e) => {
-        this.filteredItemsElement.style.display = "block";
+        console.log(this.getAttribute("name") + " Adding active");
+        this.filteredItemsElement.classList.toggle("active", true);
+        clearTimeout(this.focusOutTimeout);
       });
 
-      this.addEventListener("blur", (e) => {
-        if (this.handlingClick) {
-          this.handlingClick = false;
-          return;
-        }
-        this.filteredItemsElement.style.display = "none";
+      this.searchInputGroupElement.addEventListener("focusout", (e) => {
+        console.log(this.getAttribute("name") + " focused out by ", e.target);
+
+        this.focusOutTimeout = setTimeout(() => {
+          console.log(this.getAttribute("name") + " Removing active");
+          this.filteredItemsElement.classList.remove("active");
+        }, 0);
       });
+      // this.addEventListener("blur", (e) => {
+      //   if (this.handlingClick) {
+      //     this.handlingClick = false;
+      //     return;
+      //   }
+      //   this.filteredItemsElement.style.display = "none";
+      // });
 
       this.searchInputElement.addEventListener("input", (e) => {
         this.updateFilteredItems();
+      });
+
+      this.searchInputElement.addEventListener("focusout", (e) => {
+        console.log(
+          this.getAttribute("name") + " input focused out by ",
+          e.target
+        );
       });
 
       this.searchInputGroupElement.addEventListener("keydown", (e) => {
@@ -176,7 +193,8 @@ customElements.define(
         switch (e.code) {
           case "Tab":
             // tab
-            this.filteredItemsElement.style.display = "none";
+            //this.filteredItemsElement.style.display = "none";
+            this.filteredItemsElement.classList.remove("active");
             break;
           case "ArrowDown":
             // down arrow
@@ -197,6 +215,7 @@ customElements.define(
       });
 
       this.filteredItemsElement.addEventListener("click", (e) => {
+        console.log("clicked " + e.target.innerHTML);
         this.handlingClick = true;
         this.selectFilteredItem(e.target);
       });

@@ -10,7 +10,7 @@
     <h1 id="test-toggle" class="">Search Select</h1>
     <template id="search-select-template">
       <link rel="stylesheet" href="styles.css" />
-      <div id="search-input-group">
+      <div id="search-input-group" tabindex="-1">
         <div class="selected container">
           <div id="selected-items-text"></div>
           <input id="search-input" type="text" /><br />
@@ -37,7 +37,7 @@
     <div>
       <br /><br />
       <div class="select-container">
-        <search-select id="search-select-multiple" multiple="true">
+        <search-select id="search-select-multiple" multiple="true" name="top">
           <option value="dog">Dog</option>
           <option value="cat">Cat</option>
           <option value="hamster">Hamster</option>
@@ -49,7 +49,7 @@
       </div>
       <br /><br />
       <div class="select-container">
-        <search-select id="search-select-single">
+        <search-select id="search-select-single" name="bottom">
           <option value="1">This is text 4</option>
           <option value="2">This is text 5</option>
           <option value="3">This is text 6</option>
