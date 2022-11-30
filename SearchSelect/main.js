@@ -14,7 +14,7 @@ customElements.define(
       );
 
       this.searchInputGroupElement =
-        this.shadowRoot.getElementById("search-input-group");
+        this.shadowRoot.getElementById("search-group");
       this.searchInputElement = this.shadowRoot.getElementById("search-input");
       this.filteredItemsElement = this.shadowRoot.getElementById(
         "filtered-items-text"
@@ -28,11 +28,12 @@ customElements.define(
     }
 
     initializeFilteredItems = () => {
-      this.filteredItemDivs = [...this.options].map((opt) => {
-        let li = document.createElement("input");
+      this.filteredItemDivs = [...this.options].map((opt, index) => {
+        let li = document.createElement("li");
         li.classList.add("filtered", "item");
-        li.type = "button";
-        li.value = opt.innerHTML;
+        li.classList.toggle("even", index % 2);
+        //li.type = "button";
+        li.innerHTML = opt.innerHTML;
         li.dataset.value = opt.value;
         return li;
       });
@@ -42,16 +43,16 @@ customElements.define(
 
     updateFilteredItems = () => {
       // Filter based off the search input
+      const searchText = this.searchInputElement.value;
       this.filteredItemDivs.forEach((opt) => {
-        const searchText = this.searchInputElement.value;
         const optContainsText =
-          opt.dataset.value.toLowerCase().search(searchText.toLowerCase()) >= 0;
+          opt.innerText.toLowerCase().search(searchText.toLowerCase()) >= 0;
 
         const shouldBeShown = !searchText || optContainsText;
         opt.classList.toggle("hidden", !shouldBeShown);
       });
 
-      // Filter based off the selected items
+      // Filter based off already selected items
       [...this.options]
         .filter((opt) => opt.hasAttribute("selected"))
         .map((opt) => {
@@ -59,10 +60,18 @@ customElements.define(
             .find((div) => div.dataset.value === opt.value)
             .classList.add("hidden");
         });
+
+      var count = [
+        ...this.filteredItemsElement.querySelectorAll("li:not(.hidden)"),
+      ].map((li, index) => li.classList.toggle("even", index % 2));
+
+      // Finally, if all items are selected, deactivate dropdown
+      this.filteredItemsElement.classList.toggle("active", count);
       console.log("updated filtered items");
     };
 
     updateActiveFilteredItem = (keyDirection) => {
+      // We have used our arrow keys to navigate to an item
       // Check that all our items are still visible
       const visibleItems = this.filteredItemDivs.find(
         (opt) => !opt.classList.contains("hidden")
@@ -95,6 +104,7 @@ customElements.define(
     };
 
     selectActiveFilteredItem = () => {
+      // We have hit enter after navigating to an item in our list
       // find the currently active item
       const activeItem = this.filteredItemDivs.find((opt) =>
         opt.classList.contains("active")
@@ -111,6 +121,8 @@ customElements.define(
         opt.hasAttribute("selected")
       );
 
+      const closeCopy = this.shadowRoot.getElementById("icon-close").innerHTML;
+
       const selectedItemDivs = this.selectedOptions.map((opt) => {
         let li = document.createElement("div");
         li.classList.add("selected", "item");
@@ -118,12 +130,11 @@ customElements.define(
         li.dataset.value = opt.value;
 
         // Append our close button
-        let close = document.createElement("button");
-        close.type = "button";
-        close.value = "";
+        let close = document.createElement("div");
+        close.classList.add("remove");
+        //close.type = "button";
+        //close.value = "";
 
-        const closeCopy =
-          this.shadowRoot.getElementById("icon-close").innerHTML;
         close.innerHTML = closeCopy;
 
         li.appendChild(close);
@@ -134,6 +145,7 @@ customElements.define(
     };
 
     selectFilteredItem = (item) => {
+      // We have clicked or otherwise selected an item.
       //console.log("Select Filtered Item: ", item);
       [...this.options]
         .find((opt) => opt.value === item.dataset.value)
@@ -143,6 +155,7 @@ customElements.define(
     };
 
     removeSelectedItem = (item) => {
+      // We are removing an item from our selected items
       //console.log("Remove Selected Item: ", item);
       [...this.options]
         .find((opt) => opt.value === item.dataset.value)
@@ -169,13 +182,6 @@ customElements.define(
           this.filteredItemsElement.classList.remove("active");
         }, 0);
       });
-      // this.addEventListener("blur", (e) => {
-      //   if (this.handlingClick) {
-      //     this.handlingClick = false;
-      //     return;
-      //   }
-      //   this.filteredItemsElement.style.display = "none";
-      // });
 
       this.searchInputElement.addEventListener("input", (e) => {
         this.updateFilteredItems();
@@ -216,12 +222,10 @@ customElements.define(
 
       this.filteredItemsElement.addEventListener("click", (e) => {
         console.log("clicked " + e.target.innerHTML);
-        this.handlingClick = true;
         this.selectFilteredItem(e.target);
       });
       this.selectedItemsElement.addEventListener("click", (e) => {
-        this.handlingClick = true;
-        this.removeSelectedItem(e.target.closest("div"));
+        this.removeSelectedItem(e.target.closest("div.item"));
       });
     }
 
