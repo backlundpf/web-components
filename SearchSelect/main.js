@@ -1,33 +1,4 @@
 customElements.define(
-  "search-in-select",
-  class extends HTMLElement {
-    constructor() {
-      super();
-
-      const template = document.getElementById("search-in-select-template");
-      const templateContent = template.content;
-
-      this.attachShadow({ mode: "open" }).appendChild(
-        templateContent.cloneNode(true)
-      );
-    }
-
-    connectedCallback() {
-      this.shadowRoot
-        .getElementById("search-input")
-        .addEventListener("change", (e) => {
-          console.log(e.target.value);
-        });
-      console.log(this);
-    }
-
-    disconnectedCallback() {
-      this.shadowRoot.getElementById("search-input").removeEventListener();
-    }
-  }
-);
-
-customElements.define(
   "search-select",
   class extends HTMLElement {
     constructor() {
@@ -37,12 +8,15 @@ customElements.define(
 
       const template = document.getElementById("search-select-template");
       const templateContent = template.content;
-      this.templateContent;
 
       this.attachShadow({ mode: "open" }).appendChild(
         templateContent.cloneNode(true)
       );
 
+      this.searchGroupElement = this.shadowRoot.getElementById("search-group");
+      this.searchInputGroupElement = this.shadowRoot.querySelector(
+        ".search-input-group"
+      );
       this.searchInputElement = this.shadowRoot.getElementById("search-input");
       this.filteredItemsElement = this.shadowRoot.getElementById(
         "filtered-items-text"
@@ -52,97 +26,230 @@ customElements.define(
         "selected-items-text"
       );
 
-      this.selectElement = this.shadowRoot.getElementById("target-select");
-      this.selectElement.innerHTML = this.innerHTML;
-
-      // Set our multiple flag
-      if (this.hasAttribute("multiple")) {
-        this.selectElement.setAttribute("multiple", "true");
-      }
-
-      // Get all options
-      this.selectElement.querySelectorAll("option").forEach((opt) => {
-        this.selectableItems.push({
-          value: opt.value,
-          text: opt.innerHTML,
-          filtered: false,
-          selected: false,
-        });
-      });
+      this.options = this.querySelectorAll("option");
     }
 
-    updateItems = () => {
-      console.log("filtering");
-      const filteredItemDivs = this.selectableItems
-        .filter((item) => item.filtered && !item.selected)
-        .map((item) => {
-          let li = document.createElement("div");
-          li.innerText = item.text;
-          li.dataset.value = item.value;
-          li.addEventListener("click", (e) => {
-            item.selected = true;
-            this.updateItems();
-          });
-          return li;
-        });
-      this.filteredItemsElement.replaceChildren(...filteredItemDivs);
-
-      const selectedItemVals = [];
-
-      const selectedItemDivs = this.selectableItems
-        .filter((item) => item.selected)
-        .map((item) => {
-          selectedItemVals.push(item.value);
-          let li = document.createElement("div");
-          li.innerText = item.text;
-          li.dataset.value = item.value;
-          li.addEventListener("click", (e) => {
-            item.selected = false;
-            this.updateItems();
-          });
-          return li;
-        });
-      this.selectedItemsElement.replaceChildren(...selectedItemDivs);
-
-      this.selectElement.querySelectorAll("option").forEach((opt) => {
-        this.setSelected(opt, selectedItemVals.includes(opt.value));
+    initializeFilteredItems = () => {
+      this.filteredItemDivs = [...this.options].map((opt, index) => {
+        let li = document.createElement("li");
+        li.classList.add("filtered", "item");
+        li.classList.toggle("even", index % 2);
+        //li.type = "button";
+        li.innerHTML = opt.innerHTML;
+        li.dataset.value = opt.value;
+        return li;
       });
 
-      console.log(this.selectElement.selectedOptions);
+      this.filteredItemsElement.replaceChildren(...this.filteredItemDivs);
     };
 
-    setSelected = (opt, selected) => {
-      if (opt.hasAttribute("selected") && !selected) {
-        opt.removeAttribute("selected");
-      } else if (selected) {
-        opt.setAttribute("selected", true);
+    updateFilteredItems = () => {
+      // Filter based off the search input
+      const searchText = this.searchInputElement.value;
+      this.filteredItemDivs.forEach((opt) => {
+        const optContainsText =
+          opt.innerText.toLowerCase().search(searchText.toLowerCase()) >= 0;
+
+        const shouldBeShown = !searchText || optContainsText;
+        opt.classList.toggle("hidden", !shouldBeShown);
+      });
+
+      // Filter based off already selected items
+      [...this.options]
+        .filter((opt) => opt.hasAttribute("selected"))
+        .map((opt) => {
+          this.filteredItemDivs
+            .find((div) => div.dataset.value === opt.value)
+            .classList.add("hidden");
+        });
+
+      var count = [
+        ...this.filteredItemsElement.querySelectorAll("li:not(.hidden)"),
+      ].map((li, index) => li.classList.toggle("even", index % 2));
+
+      // Finally, if all items are selected, deactivate dropdown
+      this.filteredItemsElement.classList.toggle("active", count.length);
+      console.log("updated filtered items");
+    };
+
+    updateActiveFilteredItem = (keyDirection) => {
+      // We have used our arrow keys to navigate to an item
+      // Check that all our items are still visible
+      const visibleItems = this.filteredItemDivs.find(
+        (opt) => !opt.classList.contains("hidden")
+      );
+      if (!visibleItems) {
+        return;
+      }
+
+      // find the currently active item
+      const activeItemIndex = this.filteredItemDivs.findIndex((opt) =>
+        opt.classList.contains("active")
+      );
+
+      let index = activeItemIndex + keyDirection;
+      let item;
+
+      do {
+        if (index >= this.filteredItemDivs.length) {
+          index = 0;
+        }
+        // Iterate through the items until we find the next one that isn't hidden
+        item = this.filteredItemDivs.at(index);
+        index += keyDirection;
+      } while (item.classList.contains("hidden"));
+
+      item.classList.add("active");
+      if (activeItemIndex >= 0) {
+        this.filteredItemDivs[activeItemIndex].classList.remove("active");
       }
     };
 
-    selectedOptions = () => this.selectElement.selectedOptions;
+    selectActiveFilteredItem = () => {
+      // We have hit enter after navigating to an item in our list
+      // find the currently active item
+      const activeItem = this.filteredItemDivs.find((opt) =>
+        opt.classList.contains("active")
+      );
+
+      if (activeItem) {
+        this.selectFilteredItem(activeItem);
+        this.updateActiveFilteredItem(1);
+      }
+    };
+
+    updateSelectedItems = () => {
+      this.selectedOptions = [...this.options].filter((opt) =>
+        opt.hasAttribute("selected")
+      );
+
+      const closeCopy = this.shadowRoot.getElementById("icon-close").innerHTML;
+      // const closeCopy = document.createElement("img");
+      // closeCopy.setAttribute("src", "./icon/close.svg");
+
+      const selectedItemDivs = this.selectedOptions.map((opt) => {
+        let li = document.createElement("div");
+        li.classList.add("selected", "item");
+        li.innerText = opt.innerHTML;
+        li.dataset.value = opt.value;
+
+        // Append our close button
+        let close = document.createElement("div");
+        close.classList.add("remove");
+
+        //Add our svg close button
+        close.innerHTML = closeCopy;
+
+        li.appendChild(close);
+        return li;
+      });
+      this.selectedItemsElement.replaceChildren(...selectedItemDivs);
+      this.dispatchEvent(new Event("change"));
+    };
+
+    selectFilteredItem = (item) => {
+      // We have clicked or otherwise selected an item.
+      [...this.options]
+        .find((opt) => opt.value === item.dataset.value)
+        .setAttribute("selected", "");
+      this.updateSelectedItems();
+      this.updateFilteredItems();
+    };
+
+    removeSelectedItem = (item) => {
+      // We are removing an item from our selected items
+      [...this.options]
+        .find((opt) => opt.value === item.dataset.value)
+        .removeAttribute("selected");
+      this.updateSelectedItems();
+      this.updateFilteredItems();
+    };
 
     connectedCallback() {
-      this.searchInputElement.addEventListener("keyup", (e) => {
-        //filter our items based on the input text
-        let filteredItems = this.selectableItems.forEach(
-          (item) =>
-            (item.filtered =
-              item.text.toLowerCase().search(e.target.value.toLowerCase()) >= 0)
+      this.filteredItemsElement.classList.toggle("active", false);
+      this.initializeFilteredItems();
+
+      this.searchGroupElement.addEventListener("focusin", (e) => {
+        console.log(this.getAttribute("name") + " Adding active");
+        this.filteredItemsElement.classList.toggle("active", true);
+        this.searchGroupElement.classList.toggle("active", true);
+        clearTimeout(this.focusOutTimeout);
+      });
+
+      this.searchGroupElement.addEventListener("focusout", (e) => {
+        console.log(this.getAttribute("name") + " focused out by ", e.target);
+
+        this.focusOutTimeout = setTimeout(() => {
+          console.log(this.getAttribute("name") + " Removing active");
+          this.filteredItemsElement.classList.remove("active");
+          this.searchGroupElement.classList.remove("active");
+        }, 0);
+      });
+
+      this.searchInputElement.addEventListener("input", (e) => {
+        this.updateFilteredItems();
+      });
+
+      this.searchInputElement.addEventListener("focusout", (e) => {
+        console.log(
+          this.getAttribute("name") + " input focused out by ",
+          e.target
         );
-        this.updateItems();
+      });
+
+      this.searchGroupElement.addEventListener("keydown", (e) => {
+        // get the key
+        switch (e.code) {
+          case "Tab":
+            // tab
+            //this.filteredItemsElement.style.display = "none";
+            this.filteredItemsElement.classList.remove("active");
+            break;
+          case "ArrowDown":
+            // down arrow
+            this.updateActiveFilteredItem(1);
+            break;
+          case "ArrowUp":
+            // up arrow
+            this.updateActiveFilteredItem(-1);
+            break;
+          case "Enter":
+            // Enter
+            this.handlingClick = true;
+            this.selectActiveFilteredItem();
+            break;
+          default:
+            console.log(e.keyCode);
+        }
+      });
+
+      this.filteredItemsElement.addEventListener("click", (e) => {
+        console.log("clicked " + e.target.innerHTML);
+        this.selectFilteredItem(e.target);
+      });
+      this.selectedItemsElement.addEventListener("click", (e) => {
+        this.removeSelectedItem(e.target.closest("div.item"));
       });
     }
 
     disconnectedCallback() {
-      this.shadowRoot.getElementById("search-input").removeEventListener();
+      this.searchGroupElement.removeEventListener();
+      this.filteredItemsElement.removeEventListener();
+      this.searchInputElement.removeEventListener();
+      this.removeEventListener();
     }
   }
 );
 
-document.getElementById("search-select1").addEventListener("change", (e) => {
-  console.log("event received", e);
-});
+// document.getElementById("search-select1").addEventListener("change", (e) => {
+//   console.log("event received", e.target.selectedOptions);
+// });
+function random(number) {
+  return Math.floor(Math.random() * number);
+}
 
-document
-  .getElementById("search-select1")
-  .shadowRoot.getElementById("target-select").selectedOptions;
+function bgChange() {
+  const rndCol = `rgb(${random(255)}, ${random(255)}, ${random(255)})`;
+  console.log("Random Color: ", rndCol);
+  return rndCol;
+}
