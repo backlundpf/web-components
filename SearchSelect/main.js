@@ -13,8 +13,10 @@ customElements.define(
         templateContent.cloneNode(true)
       );
 
-      this.searchInputGroupElement =
-        this.shadowRoot.getElementById("search-group");
+      this.searchGroupElement = this.shadowRoot.getElementById("search-group");
+      this.searchInputGroupElement = this.shadowRoot.querySelector(
+        ".search-input-group"
+      );
       this.searchInputElement = this.shadowRoot.getElementById("search-input");
       this.filteredItemsElement = this.shadowRoot.getElementById(
         "filtered-items-text"
@@ -66,7 +68,7 @@ customElements.define(
       ].map((li, index) => li.classList.toggle("even", index % 2));
 
       // Finally, if all items are selected, deactivate dropdown
-      this.filteredItemsElement.classList.toggle("active", count);
+      this.filteredItemsElement.classList.toggle("active", count.length);
       console.log("updated filtered items");
     };
 
@@ -122,6 +124,8 @@ customElements.define(
       );
 
       const closeCopy = this.shadowRoot.getElementById("icon-close").innerHTML;
+      // const closeCopy = document.createElement("img");
+      // closeCopy.setAttribute("src", "./icon/close.svg");
 
       const selectedItemDivs = this.selectedOptions.map((opt) => {
         let li = document.createElement("div");
@@ -132,9 +136,8 @@ customElements.define(
         // Append our close button
         let close = document.createElement("div");
         close.classList.add("remove");
-        //close.type = "button";
-        //close.value = "";
 
+        //Add our svg close button
         close.innerHTML = closeCopy;
 
         li.appendChild(close);
@@ -146,7 +149,6 @@ customElements.define(
 
     selectFilteredItem = (item) => {
       // We have clicked or otherwise selected an item.
-      //console.log("Select Filtered Item: ", item);
       [...this.options]
         .find((opt) => opt.value === item.dataset.value)
         .setAttribute("selected", "");
@@ -156,7 +158,6 @@ customElements.define(
 
     removeSelectedItem = (item) => {
       // We are removing an item from our selected items
-      //console.log("Remove Selected Item: ", item);
       [...this.options]
         .find((opt) => opt.value === item.dataset.value)
         .removeAttribute("selected");
@@ -167,19 +168,21 @@ customElements.define(
     connectedCallback() {
       this.filteredItemsElement.classList.toggle("active", false);
       this.initializeFilteredItems();
-      //this.populateFilteredItems();
-      this.searchInputGroupElement.addEventListener("focusin", (e) => {
+
+      this.searchGroupElement.addEventListener("focusin", (e) => {
         console.log(this.getAttribute("name") + " Adding active");
         this.filteredItemsElement.classList.toggle("active", true);
+        this.searchGroupElement.classList.toggle("active", true);
         clearTimeout(this.focusOutTimeout);
       });
 
-      this.searchInputGroupElement.addEventListener("focusout", (e) => {
+      this.searchGroupElement.addEventListener("focusout", (e) => {
         console.log(this.getAttribute("name") + " focused out by ", e.target);
 
         this.focusOutTimeout = setTimeout(() => {
           console.log(this.getAttribute("name") + " Removing active");
           this.filteredItemsElement.classList.remove("active");
+          this.searchGroupElement.classList.remove("active");
         }, 0);
       });
 
@@ -194,7 +197,7 @@ customElements.define(
         );
       });
 
-      this.searchInputGroupElement.addEventListener("keydown", (e) => {
+      this.searchGroupElement.addEventListener("keydown", (e) => {
         // get the key
         switch (e.code) {
           case "Tab":
@@ -230,7 +233,7 @@ customElements.define(
     }
 
     disconnectedCallback() {
-      this.searchInputGroupElement.removeEventListener();
+      this.searchGroupElement.removeEventListener();
       this.filteredItemsElement.removeEventListener();
       this.searchInputElement.removeEventListener();
       this.removeEventListener();

@@ -10,11 +10,25 @@
     <h1 id="test-toggle" class="">Search Select</h1>
     <template id="search-select-template">
       <link rel="stylesheet" href="styles.css" />
-      <div id="search-group" tabindex="-1">
+      <div id="search-group" class="search-group" tabindex="-1">
         <div id="selected-items-text"></div>
-        <div class="search-input-group">
+        <div class="search-input-group" tabindex="-1">
           <input id="search-input" class="search-input" type="text" />
-          <div class="caret"></div>
+          <div class="vertical-spacer"></div>
+          <svg
+            width="24px"
+            height="24px"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <use xlink:href="#svg-caret-down" />
+            <!-- <path
+              d="M6.1018 8C5.02785 8 4.45387 9.2649 5.16108 10.0731L10.6829 16.3838C11.3801 17.1806 12.6197 17.1806 13.3169 16.3838L18.8388 10.0731C19.5459 9.2649 18.972 8 17.898 8H6.1018Z"
+              fill="#212121"
+            /> -->
+          </svg>
+          <!-- <img class="caret" src="./icon/caret-down.svg" /> -->
         </div>
         <ul id="filtered-items-text" class="filtered-items"></ul>
       </div>
@@ -33,6 +47,21 @@
               stroke-width="2"
               d="M6 18L18 6M6 6l12 12"
             ></path>
+          </svg>
+        </div>
+        <div id="icon-caret-down">
+          <svg
+            id="svg-caret-down"
+            width="24px"
+            height="24px"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M6.1018 8C5.02785 8 4.45387 9.2649 5.16108 10.0731L10.6829 16.3838C11.3801 17.1806 12.6197 17.1806 13.3169 16.3838L18.8388 10.0731C19.5459 9.2649 18.972 8 17.898 8H6.1018Z"
+              fill="#212121"
+            />
           </svg>
         </div>
       </div>

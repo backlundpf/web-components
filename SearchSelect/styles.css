@@ -1,24 +1,32 @@
+/* Testing Style HTML Elements */
 .elements-container {
   display: flex;
   column-gap: 20px;
 }
-
 .select-container {
   width: 150px;
 }
 
-search-select .filtered-items li {
+/* Actual Elements */
+
+.search-group {
+  position: relative;
+  height: 1rem;
 }
 
 .search-input-group {
   display: flex;
+  align-items: center;
   border: 1px solid lightgray;
   box-sizing: content-box;
+  height: 100%;
+  padding: 1px 0px;
 }
 
 .search-input-group input {
   border: none;
-  border-right: 1px solid lightgray;
+  width: 100%;
+  height: 100%;
 }
 
 /* .caret {
@@ -31,10 +39,25 @@ search-select .filtered-items li {
   margin-top: 4px;
 } */
 
-.caret {
-  background-image: url("./icon/caret-down.svg");
+.caret-bg {
+  background-image: url("#svg-caret-down");
   background-repeat: no-repeat;
   min-width: 1rem;
+}
+
+.search-input-group .vertical-spacer {
+  height: 85%;
+  border-left: 1px solid lightGray;
+}
+.search-input-group svg {
+  color: lightGray;
+  height: 85%;
+  transition-duration: 0.5s;
+}
+
+.search-group.active .search-input-group svg {
+  border: none;
+  transform: rotate(180deg);
 }
 
 .hidden {
@@ -56,9 +79,11 @@ search-select .filtered-items li {
   color: white;
   background-color: gray;
   border-radius: 1.5rem;
-  height: 1.5rem;
+  /* height: 1.5rem; */
   /* top right bottom left */
-  padding: 0.1rem 0rem 0.1rem 0.5rem;
+  /* padding: 0.1rem 0rem 0.1rem 0.5rem; */
+  padding-left: 0.75rem;
+  margin-bottom: 1px;
 }
 
 .selected.item div.remove {
@@ -68,8 +93,8 @@ search-select .filtered-items li {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 1.7rem;
-  height: 1.7rem;
+  height: 100%;
+  aspect-ratio: 1/1;
 }
 
 .selected.item div.remove:hover {
@@ -77,12 +102,13 @@ search-select .filtered-items li {
 }
 
 .selected.item div.remove svg {
-  height: 1.2rem;
+  height: 80%;
+  width: 1.5rem;
 }
 
 .filtered.item {
   background-color: white;
-  padding: 0.2rem 1rem;
+  padding: 0.1rem 1rem;
 }
 
 .filtered.item.even {
@@ -102,14 +128,10 @@ search-select .filtered-items li {
   flex-wrap: wrap;
 }
 
-#search-group {
-  position: relative;
-}
-
 .filtered-items {
   list-style: none;
   padding-left: 0;
-  margin-top: 5px;
+  margin-top: 3px;
   display: none;
   position: absolute;
   width: 100%;
