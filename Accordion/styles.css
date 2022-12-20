@@ -42,12 +42,11 @@
   max-height: 0;
   text-align: justify;
   overflow: hidden;
-  transition: 0.5s;
+  /* Note: cannot use relative height e.g. auto/100% with animations */
+  transition: max-height 0.5s ease-in-out;
 }
 
 .tab.active > .tab-content {
-  /*display: block;*/
   /* Setting an initial height here, but this should be set by the initializing function in javascript */
   max-height: 550px;
-  /* flex: 1; */
 }

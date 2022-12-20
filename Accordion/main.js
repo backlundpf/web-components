@@ -6,10 +6,6 @@
 //     }
 //   }
 // );
-$(document).ready(function () {
-  initCollapsibles();
-  initAccordions();
-});
 
 function initCollapsibles() {
   var collTabElem = document.getElementsByClassName("tab");
@@ -103,3 +99,8 @@ class ClassWatcher {
     }
   };
 }
+
+window.addEventListener("DOMContentLoaded", (event) => {
+  initCollapsibles();
+  initAccordions();
+});
