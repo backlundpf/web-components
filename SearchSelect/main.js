@@ -69,7 +69,7 @@ customElements.define(
 
       // Finally, if all items are selected, deactivate dropdown
       this.filteredItemsElement.classList.toggle("active", count.length);
-      console.log("updated filtered items");
+      //console.log("updated filtered items");
     };
 
     updateActiveFilteredItem = (keyDirection) => {
@@ -170,17 +170,17 @@ customElements.define(
       this.initializeFilteredItems();
 
       this.searchGroupElement.addEventListener("focusin", (e) => {
-        console.log(this.getAttribute("name") + " Adding active");
+        //console.log(this.getAttribute("name") + " Adding active");
         this.filteredItemsElement.classList.toggle("active", true);
         this.searchGroupElement.classList.toggle("active", true);
         clearTimeout(this.focusOutTimeout);
       });
 
       this.searchGroupElement.addEventListener("focusout", (e) => {
-        console.log(this.getAttribute("name") + " focused out by ", e.target);
+        //console.log(this.getAttribute("name") + " focused out by ", e.target);
 
         this.focusOutTimeout = setTimeout(() => {
-          console.log(this.getAttribute("name") + " Removing active");
+          //console.log(this.getAttribute("name") + " Removing active");
           this.filteredItemsElement.classList.remove("active");
           this.searchGroupElement.classList.remove("active");
         }, 0);
@@ -191,10 +191,9 @@ customElements.define(
       });
 
       this.searchInputElement.addEventListener("focusout", (e) => {
-        console.log(
-          this.getAttribute("name") + " input focused out by ",
-          e.target
-        );
+        //console.log(
+        this.getAttribute("name") + " input focused out by ", e.target;
+        //);
       });
 
       this.searchGroupElement.addEventListener("keydown", (e) => {
@@ -219,12 +218,12 @@ customElements.define(
             this.selectActiveFilteredItem();
             break;
           default:
-            console.log(e.keyCode);
+          // console.log(e.keyCode);
         }
       });
 
       this.filteredItemsElement.addEventListener("click", (e) => {
-        console.log("clicked " + e.target.innerHTML);
+        // console.log("clicked " + e.target.innerHTML);
         this.selectFilteredItem(e.target);
       });
       this.selectedItemsElement.addEventListener("click", (e) => {
@@ -240,16 +239,3 @@ customElements.define(
     }
   }
 );
-
-// document.getElementById("search-select1").addEventListener("change", (e) => {
-//   console.log("event received", e.target.selectedOptions);
-// });
-function random(number) {
-  return Math.floor(Math.random() * number);
-}
-
-function bgChange() {
-  const rndCol = `rgb(${random(255)}, ${random(255)}, ${random(255)})`;
-  console.log("Random Color: ", rndCol);
-  return rndCol;
-}

@@ -45,6 +45,23 @@
   min-width: 1rem;
 }
 
+.search-input-group::after {
+  aspect-ratio: 1 / 1;
+  height: 1rem;
+  content: "\276F";
+  color: darkgray;
+  font-size: 0.7rem;
+  font-weight: bold;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  transition: transform 0.4s ease-in-out;
+}
+
+.search-group.active .search-input-group::after {
+  transform: rotate(90deg);
+}
+
 .search-input-group .vertical-spacer {
   height: 85%;
   border-left: 1px solid lightGray;
@@ -132,16 +149,19 @@
   list-style: none;
   padding-left: 0;
   margin-top: 3px;
-  display: none;
+  /* display: none; */
   position: absolute;
   width: 100%;
-  max-height: 200px;
+  max-height: 0px;
   overflow-y: auto;
   z-index: 1;
-  border: 1px solid lightgray;
+  border: 0px solid lightgray;
   box-sizing: border-box;
+  transition: all 0.4s ease-in-out;
 }
 
 .filtered-items.active {
-  display: block;
+  /* display: block; */
+  max-height: 200px;
+  border: 1px solid lightgray;
 }
