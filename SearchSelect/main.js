@@ -30,6 +30,8 @@ customElements.define(
     }
 
     initializeFilteredItems = () => {
+      // We may have added options here.
+      this.options = this.querySelectorAll("option");
       this.filteredItemDivs = [...this.options].map((opt, index) => {
         let li = document.createElement("li");
         li.classList.add("filtered", "item");
