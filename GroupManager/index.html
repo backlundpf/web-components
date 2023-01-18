@@ -12,18 +12,11 @@
         <label for="group-select">Select Group:</label><br />
         <select id="group-select">
           <option>Select...</option>
-          <!-- <option value="dog">Dog</option>
-          <option value="cat">Cat</option>
-          <option value="hamster">Hamster</option>
-          <option value="parrot">Parrot</option>
-          <option value="spider">Spider</option>
-          <option value="goldfish">Goldfish</option>
-          <option value="aardvark">Aardvark</option> -->
         </select>
         <p>Or</p>
-        <label for="group-name">Name:</label><br />
-        <input id="group-name" />
-        <button id="group-new">Add New</button>
+        <label for="group-new-name">Name:</label><br />
+        <input id="group-new-name" />
+        <button id="group-new-submit">Add New</button>
       </div>
       <div id="member-selection" style="display: none">
         <div id="selected-group-name"></div>
@@ -35,6 +28,6 @@
       </div>
     </template>
 
-    <group-manager role="COR" groupId="" resourceId="1"> </group-manager>
+    <group-manager role="COR" groupId="3" resourceId="1"> </group-manager>
   </body>
 </html>
