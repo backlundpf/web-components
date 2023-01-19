@@ -3,15 +3,15 @@ customElements.define(
   class extends HTMLElement {
     constructor() {
       super();
+      const templateText = document.getElementById(
+        "search-select-template"
+      ).innerHTML;
 
       this.selectableItems = [];
 
-      const template = document.getElementById("search-select-template");
-      const templateContent = template.content;
+      this.attachShadow({ mode: "open" });
 
-      this.attachShadow({ mode: "open" }).appendChild(
-        templateContent.cloneNode(true)
-      );
+      this.shadowRoot.innerHTML = templateText;
 
       this.searchGroupElement = this.shadowRoot.getElementById("search-group");
       this.searchInputGroupElement = this.shadowRoot.querySelector(
@@ -30,7 +30,6 @@ customElements.define(
     }
 
     initializeFilteredItems = () => {
-      // We may have added options here.
       this.options = this.querySelectorAll("option");
       this.filteredItemDivs = [...this.options].map((opt, index) => {
         let li = document.createElement("li");
@@ -43,6 +42,8 @@ customElements.define(
       });
 
       this.filteredItemsElement.replaceChildren(...this.filteredItemDivs);
+      this.updateFilteredItems();
+      this.updateSelectedItems(true);
     };
 
     updateFilteredItems = () => {
@@ -70,7 +71,7 @@ customElements.define(
       ].map((li, index) => li.classList.toggle("even", index % 2));
 
       // Finally, if all items are selected, deactivate dropdown
-      this.filteredItemsElement.classList.toggle("active", count.length);
+      //this.filteredItemsElement.classList.toggle("active", count.length);
       //console.log("updated filtered items");
     };
 
@@ -120,7 +121,7 @@ customElements.define(
       }
     };
 
-    updateSelectedItems = () => {
+    updateSelectedItems = (initial = false) => {
       this.selectedOptions = [...this.options].filter((opt) =>
         opt.hasAttribute("selected")
       );
@@ -146,7 +147,9 @@ customElements.define(
         return li;
       });
       this.selectedItemsElement.replaceChildren(...selectedItemDivs);
-      this.dispatchEvent(new Event("change"));
+      if (!initial) {
+        this.dispatchEvent(new Event("change"));
+      }
     };
 
     selectFilteredItem = (item) => {
@@ -194,7 +197,7 @@ customElements.define(
 
       this.searchInputElement.addEventListener("focusout", (e) => {
         //console.log(
-        this.getAttribute("name") + " input focused out by ", e.target;
+        //this.getAttribute("name") + " input focused out by ", e.target;
         //);
       });
 
@@ -231,6 +234,18 @@ customElements.define(
       this.selectedItemsElement.addEventListener("click", (e) => {
         this.removeSelectedItem(e.target.closest("div.item"));
       });
+
+      // Child node added mutation listener
+      const mutationCallback = (mutationList, observer) => {
+        for (const mutation of mutationList) {
+          if (mutation.type === "childList") {
+            this.initializeFilteredItems();
+          }
+        }
+      };
+
+      this.mutationObserver = new MutationObserver(mutationCallback);
+      this.mutationObserver.observe(this, { childList: true });
     }
 
     disconnectedCallback() {
@@ -238,6 +253,7 @@ customElements.define(
       this.filteredItemsElement.removeEventListener();
       this.searchInputElement.removeEventListener();
       this.removeEventListener();
+      this.mutationObserver.disconnect();
     }
   }
 );

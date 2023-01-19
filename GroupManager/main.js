@@ -216,19 +216,18 @@ const api2 = {
     });
   },
   removeGroupAccessMap: async function (id) {
-    var url = apiGroupEndpoint + accessMap.GroupId + "/Access";
+    var url = apiGroupEndpoint + accessMap.GroupId + "/Access/" + id;
 
     const payload = {
-      method: "POST",
+      method: "DELETE",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(accessMap),
     };
 
     return await fetch(url, payload).then((result) => {
       if (result.ok) return result.json();
-      console.error("Could not find group");
+      console.error("Could not find group access");
       return null;
     });
   },
@@ -346,19 +345,24 @@ customElements.define(
 
       // State
       this.selectedGroupId = () =>
-        this.hasAttribute("groupId") ? this.getAttribute("groupId") : null;
+        this.hasAttribute("groupid") ? this.getAttribute("groupid") : null;
 
-      this.claimType = this.hasAttribute("claimType")
-        ? this.getAttribute("claimType")
-        : null;
+      this.claimType = () =>
+        this.hasAttribute("claimtype") ? this.getAttribute("claimtype") : null;
 
-      this.resourceId = this.hasAttribute("resourceId")
-        ? this.getAttribute("resourceId")
-        : null;
+      this.resourceType = () =>
+        this.hasAttribute("resourcetype")
+          ? this.getAttribute("resourcetype")
+          : null;
+
+      this.resourceId = () =>
+        this.hasAttribute("resourceid")
+          ? this.getAttribute("resourceid")
+          : null;
     }
 
     showGroups = async () => {
-      this.removeAttribute("groupId");
+      this.removeAttribute("groupid");
 
       this.memberSelectionElement.style.display = "none";
       var groups = await api.fetchAllGroups();
@@ -383,10 +387,9 @@ customElements.define(
       }
       this.selectedGroup = group;
 
-      this.setAttribute("groupId", group.id);
+      this.setAttribute("groupid", group.id);
       this.groupSelectionElement.style.display = "none";
-
-      this.memberSubmitButton.setAttribute("disabled", true);
+      // TODO: add spinner
 
       // Add group accessmap
       var accessMap = this.createAccessMap();
@@ -412,49 +415,52 @@ customElements.define(
         this.memberSelectElement.appendChild(opt);
       });
 
-      this.memberSelectionElement.style.display = "block";
-
+      this.memberSubmitButton.setAttribute("disabled", true);
+      this.memberSubmitButton.style.display = "none";
       this.selectedGroupNameElement.innerText = group.name;
+      this.memberSelectionElement.style.display = "block";
     };
 
-    updateGroupMembers = () => {
+    updateGroupMembers = async () => {
       // post current selected group members
       var selectedMembers = [...this.memberSelectElement.selectedOptions].map(
         (opt) => opt.value
       );
-      api.updateGroupMembers(this.selectedGroupId(), selectedMembers);
+      await api.updateGroupMembers(this.selectedGroupId(), selectedMembers);
+      this.memberSubmitButton.setAttribute("disabled", true);
+      this.memberSubmitButton.style.display = "none";
     };
 
     toggleMemberSubmit = (e) => {
       this.memberSubmitButton.removeAttribute("disabled");
+      this.memberSubmitButton.style.display = "block";
     };
 
     createAccessMap = () => {
       return {
         GroupId: this.selectedGroupId(),
         AccessData: "",
-        ClaimType: this.claimType,
-        ResourceType: this.resourceType,
-        ResourceId: this.resourceId,
+        ClaimType: this.claimType(),
+        ResourceType: this.resourceType(),
+        ResourceId: this.resourceId(),
       };
     };
 
     removeAccessMap = async () => {
-      if (!this.group) {
+      if (!this.selectedGroup) {
         return;
       }
 
-      var accessMap = this.group.groupAccessMappings.find((map) => {
+      var accessMap = this.selectedGroup.groupAccessMappings.find((map) => {
         return (
-          map.claimType == this.claimType &&
-          map.resourceId == this.resourceId &&
-          map.groupId == this.selectedGroup()
+          map.claimType == this.claimType() &&
+          map.claimValue == this.resourceId()
         );
       });
 
       if (!accessMap) return;
 
-      await api.removeGroupAccessMap(accessMap.id);
+      await api.removeGroupAccessMap(accessMap);
     };
 
     addGroup = async (name) => {
@@ -482,18 +488,19 @@ customElements.define(
         this.addGroup(groupName);
       });
 
-      this.memberSubmitButton.addEventListener("click", (e) => {
-        this.updateGroupMembers();
-      });
-
       this.memberSelectElement.addEventListener(
         "change",
         this.toggleMemberSubmit
       );
 
+      this.memberSubmitButton.addEventListener("click", (e) => {
+        this.updateGroupMembers();
+      });
+
       this.changeGroupButton.addEventListener("click", (e) => {
         // TODO: If previous value, remove group access
         if (this.selectedGroupId()) {
+          this.removeAccessMap();
         }
         this.showGroups();
       });
