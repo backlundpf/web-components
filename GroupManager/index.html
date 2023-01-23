@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <title>Simple template</title>
     <link rel="stylesheet" href="styles.css" />
-    <script src="main.js" defer></script>
+    <script type="module" src="main.js" defer></script>
   </head>
   <body>
     <template id="group-manager-template">
@@ -18,9 +18,12 @@
         <input id="group-new-name" />
         <button id="group-new-submit">Add New</button>
       </div>
+      <button id="change-group" type="button">Change Group</button><br />
+      <group-members-manager id="group-members-manager"></group-members-manager>
+    </template>
+    <template id="group-members-manager-template">
       <div id="member-selection" style="display: none">
-        <div id="selected-group-name"></div>
-        <button id="change-group" type="button">Change Group</button><br />
+        <div id="selected-group-name">Error: No group provided.</div>
         <div>Members:</div>
         <select id="member-select" multiple="true"></select>
         <br />
@@ -29,5 +32,9 @@
     </template>
 
     <group-manager role="COR" groupId="3" resourceId="1"> </group-manager>
+
+    <br />
+    <br />
+    <!-- <group-members-manager groupId="3"> </group-members-manager> -->
   </body>
 </html>
